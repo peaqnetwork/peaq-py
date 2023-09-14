@@ -116,6 +116,15 @@ class ExtrinsicBatch:
         return _execute_extrinsic_batch(
             self.substrate, alt_keypair, self.batch, wait_for_finalization)
 
+    def execute_receipt(self, wait_for_finalization=False, alt_keypair=None) -> str:
+        """Executes the extrinsic-stack"""
+        if not self.batch:
+            return ''
+        if alt_keypair is None:
+            alt_keypair = self.keypair
+        return _execute_extrinsic_batch_receipt(
+            self.substrate, alt_keypair, self.batch, wait_for_finalization)
+
     def execute_n_clear(self, alt_keypair=None, wait_for_finalization=False) -> str:
         """Combination of execute() and clear()"""
         if alt_keypair is None:
@@ -200,3 +209,42 @@ def _execute_extrinsic_batch(substrate, kp_src, batch,
         raise IOError(f'Extrinsic failed: {receipt.block_hash}, substrate.get_events(receipt.block_hash)')
     else:
         return receipt.block_hash
+
+
+# [TODO] Need to remove
+def _execute_extrinsic_batch_receipt(substrate, kp_src, batch,
+                                     wait_for_finalization=False) -> str:
+    """
+    Executes a extrinsic-stack/batch-call on substrate
+    Parameters:
+      substrate:  SubstrateInterface
+      kp_src:     Keypair
+      batch:      list[_compose_call(), _compose_call(), ...]
+    """
+    # Wrap payload into a utility batch cal
+    call = substrate.compose_call(
+        call_module='Utility',
+        call_function='batch_all',
+        call_params={
+            'calls': batch,
+        })
+
+    nonce = substrate.get_account_nonce(kp_src.ss58_address)
+    extrinsic = substrate.create_signed_extrinsic(
+        call=call,
+        keypair=kp_src,
+        era={'period': 64},
+        nonce=nonce
+    )
+
+    receipt = substrate.submit_extrinsic(
+        extrinsic, wait_for_inclusion=True,
+        wait_for_finalization=wait_for_finalization)
+    if len(batch) == 1:
+        description = _generate_call_description(batch[0])
+    else:
+        description = _generate_batch_description(batch)
+    if DEBUG:
+        show_extrinsic(receipt, description)
+
+    return receipt

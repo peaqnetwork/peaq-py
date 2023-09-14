@@ -26,6 +26,6 @@ class TestExtrinsic(unittest.TestCase):
     def test_transfer(self):
         kp_dst = Keypair.create_from_mnemonic(Keypair.generate_mnemonic())
 
-        bl_hash = transfer(self.substrate, self.kp_src, kp_dst, self.num)
-        self.assertTrue(bl_hash, f'fund failed {bl_hash}')
+        receipt = transfer(self.substrate, self.kp_src, kp_dst.ss58_address, self.num, 1)
+        self.assertTrue(receipt.is_success, f'transfer failed {receipt.error_message}')
         self.assertEqual(get_account_balance(self.substrate, kp_dst.ss58_address), self.num)
