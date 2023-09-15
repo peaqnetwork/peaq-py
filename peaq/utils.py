@@ -1,5 +1,9 @@
+import time
 from dataclasses import dataclass
 from substrateinterface import SubstrateInterface, Keypair
+from scalecodec.base import RuntimeConfiguration
+from scalecodec.type_registry import load_type_registry_preset
+from scalecodec.utils.ss58 import ss58_encode
 
 DEBUG = False
 
@@ -248,3 +252,42 @@ def _execute_extrinsic_batch_receipt(substrate, kp_src, batch,
         show_extrinsic(receipt, description)
 
     return receipt
+
+
+def get_block_height(substrate):
+    latest_block = substrate.get_block()
+    return latest_block['header']['number']
+
+
+def get_block_hash(substrate, block_num):
+    return substrate.get_block_hash(block_id=block_num)
+
+
+def get_chain(substrate):
+    return substrate.rpc_request(method='system_chain', params=[]).get('result')
+
+
+def wait_for_n_blocks(substrate, n=1):
+    """Waits until the next block has been created"""
+    height = get_block_height(substrate)
+    wait_height = height + n
+    past = 0
+    while past < n:
+        next_height = get_block_height(substrate)
+        if height == next_height:
+            time.sleep(1)
+        else:
+            print(f'Current block: {height}, but waiting at {wait_height}')
+            height = next_height
+            past = past + 1
+
+
+def calculate_multi_sig(kps, threshold):
+    '''https://github.com/polkascan/py-scale-codec/blob/f063cfd47c836895886697e7d7112cbc4e7514b3/test/test_scale_types.py#L383'''
+
+    addrs = [kp.ss58_address for kp in kps]
+    RuntimeConfiguration().update_type_registry(load_type_registry_preset('legacy'))
+    multi_account_id = RuntimeConfiguration().get_decoder_class('MultiAccountId')
+
+    multi_sig_account = multi_account_id.create_from_account_list(addrs, threshold)
+    return ss58_encode(multi_sig_account.value.replace('0x', ''), 42)
