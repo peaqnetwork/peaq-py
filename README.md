@@ -1,9 +1,9 @@
 # peaq-py
 Follow documentation for detailed overview of feature and functionalities of peaq SDK.
 
-# test
-In this version, there are several test cases in the peaq-bc-test. In the future, we have to move it back
-
+# TODO
+1. Use the OO structure
+2. Think about the test cases because some of them tested in the peaq-bc-test
 
 # How to publish
 rm -rf build dist
