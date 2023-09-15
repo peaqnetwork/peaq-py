@@ -14,7 +14,7 @@ def storage_add_payload(batch, item_type, item):
 def storage_add(substrate, kp_src, item_type, item):
     batch = ExtrinsicBatch(substrate, kp_src)
     storage_add_payload(batch, item_type, item)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def storage_update_payload(batch, item_type, item):
@@ -30,7 +30,7 @@ def storage_update_payload(batch, item_type, item):
 def storage_update(substrate, kp_src, item_type, item):
     batch = ExtrinsicBatch(substrate, kp_src)
     storage_update_payload(batch, item_type, item)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def storage_rpc_read(substrate, addr, item_type):

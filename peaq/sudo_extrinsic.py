@@ -12,7 +12,7 @@ def funds(substrate, kp_sudo, dsts, token_num, new_reserved=0):
                 'new_free': token_num,
                 'new_reserved': new_reserved
             })
-    return batch.execute_receipt(True)
+    return batch.execute()
 
 
 # [TODO] Change the API, kp_dst to addr
@@ -27,4 +27,4 @@ def fund(substrate, kp_sudo, kp_dst, new_free, new_reserved=0):
             'new_reserved': new_reserved
         }
     )
-    return batch.execute_receipt(True)
+    return batch.execute()

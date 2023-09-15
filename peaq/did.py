@@ -13,7 +13,7 @@ def did_add_payload(batch, did_account, name, value, valid_for=None):
 def did_add(substrate, kp_src, did_account, name, value, valid_for=None):
     batch = ExtrinsicBatch(substrate, kp_src)
     did_add_payload(batch, did_account, name, value, valid_for)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def did_update_payload(batch, did_account, name, value, valid_for=None):
@@ -31,7 +31,7 @@ def did_update_payload(batch, did_account, name, value, valid_for=None):
 def did_update(substrate, kp_src, did_account, name, value, valid_for=None):
     batch = ExtrinsicBatch(substrate, kp_src)
     did_update_payload(batch, did_account, name, value, valid_for)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def did_remove_payload(batch, did_account, name):
@@ -47,7 +47,7 @@ def did_remove_payload(batch, did_account, name):
 def did_remove(substrate, kp_src, did_account, name):
     batch = ExtrinsicBatch(substrate, kp_src)
     did_remove_payload(batch, did_account, name)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def did_rpc_read(substrate, did_account, name):

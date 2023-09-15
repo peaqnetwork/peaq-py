@@ -30,7 +30,7 @@ def rbac_add_role_payload(batch, entity_id, name):
 def rbac_add_role(substrate, kp_src, entity_id, name):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_add_role_payload(batch, entity_id, name)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_add_group_payload(batch, group_id, name):
@@ -46,7 +46,7 @@ def rbac_add_group_payload(batch, group_id, name):
 def rbac_add_group(substrate, kp_src, group_id, name):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_add_group_payload(batch, group_id, name)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_add_permission_payload(batch, permission_id, name):
@@ -62,7 +62,7 @@ def rbac_add_permission_payload(batch, permission_id, name):
 def rbac_add_permission(substrate, kp_src, permission_id, name):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_add_permission_payload(batch, permission_id, name)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_permission2role_payload(batch, permission_id, role_id):
@@ -78,7 +78,7 @@ def rbac_permission2role_payload(batch, permission_id, role_id):
 def rbac_permission2role(substrate, kp_src, permission_id, role_id):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_permission2role_payload(batch, permission_id, role_id)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_role2group_payload(batch, role_id, group_id):
@@ -94,7 +94,7 @@ def rbac_role2group_payload(batch, role_id, group_id):
 def rbac_role2group(substrate, kp_src, role_id, group_id):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_role2group_payload(batch, role_id, group_id)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_role2user_payload(batch, role_id, user_id):
@@ -110,7 +110,7 @@ def rbac_role2user_payload(batch, role_id, user_id):
 def rbac_role2user(substrate, kp_src, role_id, user_id):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_role2user_payload(batch, role_id, user_id)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_user2group_payload(batch, user_id, group_id):
@@ -126,7 +126,7 @@ def rbac_user2group_payload(batch, user_id, group_id):
 def rbac_user2group(substrate, kp_src, user_id, group_id):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_user2group_payload(batch, user_id, group_id)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def rbac_disable_group_payload(batch, group_id):
@@ -141,7 +141,7 @@ def rbac_disable_group_payload(batch, group_id):
 def rbac_disable_group(substrate, kp_src, group_id):
     batch = ExtrinsicBatch(substrate, kp_src)
     rbac_disable_group_payload(batch, group_id)
-    return batch.execute_receipt()
+    return batch.execute()
 
 
 def _convert_output(data):
