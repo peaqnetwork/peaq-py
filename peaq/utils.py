@@ -41,9 +41,7 @@ def _generate_call_description(call):
 
 def _generate_batch_description(batch):
     """Generates a description for an extrinsic batch"""
-    desc = []
-    for b in batch:
-        desc.append(f'{_generate_call_description(b)}')
+    desc = [f'{_generate_call_description(b)}' for b in batch]
     desc = ', '.join(desc)
     return f'Batch[ {desc} ]'
 
@@ -139,6 +137,10 @@ class ExtrinsicBatch:
         if keypair_or_uri is None:
             keypair_or_uri = self.keypair
         return ExtrinsicBatch(self.substrate, keypair_or_uri)
+
+    def get_calls(self):
+        """returns a list of the alls of the extrinsics in this stack"""
+        return [x for x in self.batch]
 
 
 def _compose_call(substrate, module, extrinsic, params):
