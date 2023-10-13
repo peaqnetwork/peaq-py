@@ -1,0 +1,6 @@
+setuptools==68.2.2
+wheel==0.41.2
+twine==4.0.2
+substrate_interface==1.7.1
+scalecodec==1.2.4
+pytest==7.4.2
