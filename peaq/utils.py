@@ -101,12 +101,12 @@ class ExtrinsicBatch:
 
     def compose_call(self, module, extrinsic, params):
         """Composes and appends an extrinsic call to this stack"""
-        self.batch.append(_compose_call(
+        self.batch.append(self._compose_call(
             self.substrate, module, extrinsic, params))
 
     def compose_sudo_call(self, module, extrinsic, params):
         """Composes a sudo-user extrinsic call and adds it this stack"""
-        self.batch.append(_compose_sudo_call(
+        self.batch.append(self._compose_sudo_call(
             self.substrate, module, extrinsic, params))
 
     # TODO
@@ -116,7 +116,7 @@ class ExtrinsicBatch:
             return ''
         if alt_keypair is None:
             alt_keypair = self.keypair
-        return _execute_extrinsic_batch(
+        return self._execute_extrinsic_batch(
             self.substrate, alt_keypair, self.batch, wait_for_finalization)
 
     # TODO
@@ -142,67 +142,64 @@ class ExtrinsicBatch:
         """returns a list of the alls of the extrinsics in this stack"""
         return [x for x in self.batch]
 
+    def _compose_call(self, substrate, module, extrinsic, params):
+        """
+        Composes a substrate-extrinsic-call on any module
+        Example:
+          module = 'Rbac'
+          extrinsic = 'add_role'
+          params = {'role_id': entity_id, 'name': name }
+        """
+        return substrate.compose_call(
+            call_module=module,
+            call_function=extrinsic,
+            call_params=params
+        )
 
-def _compose_call(substrate, module, extrinsic, params):
-    """
-    Composes a substrate-extrinsic-call on any module
-    Example:
-      module = 'Rbac'
-      extrinsic = 'add_role'
-      params = {'role_id': entity_id, 'name': name }
-    """
-    return substrate.compose_call(
-        call_module=module,
-        call_function=extrinsic,
-        call_params=params
-    )
+    def _compose_sudo_call(self, substrate, module, extrinsic, params):
+        """
+        Composes a substrate-sudo-extrinsic-call on any module
+        Parameters same as in compose_call, see above
+        """
+        payload = self._compose_call(substrate, module, extrinsic, params)
+        return self._compose_call(substrate, 'Sudo', 'sudo', {'call': payload.value})
 
+    def _execute_extrinsic_batch(self, substrate, kp_src, batch,
+                                 wait_for_finalization=False) -> str:
+        """
+        Executes a extrinsic-stack/batch-call on substrate
+        Parameters:
+          substrate:  SubstrateInterface
+          kp_src:     Keypair
+          batch:      list[_compose_call(), _compose_call(), ...]
+        """
+        # Wrap payload into a utility batch cal
+        call = substrate.compose_call(
+            call_module='Utility',
+            call_function='batch_all',
+            call_params={
+                'calls': batch,
+            })
 
-def _compose_sudo_call(substrate, module, extrinsic, params):
-    """
-    Composes a substrate-sudo-extrinsic-call on any module
-    Parameters same as in compose_call, see above
-    """
-    payload = _compose_call(substrate, module, extrinsic, params)
-    return _compose_call(substrate, 'Sudo', 'sudo', {'call': payload.value})
+        nonce = substrate.get_account_nonce(kp_src.ss58_address)
+        extrinsic = substrate.create_signed_extrinsic(
+            call=call,
+            keypair=kp_src,
+            era={'period': 64},
+            nonce=nonce
+        )
 
+        receipt = substrate.submit_extrinsic(
+            extrinsic, wait_for_inclusion=True,
+            wait_for_finalization=wait_for_finalization)
+        if len(batch) == 1:
+            description = _generate_call_description(batch[0])
+        else:
+            description = _generate_batch_description(batch)
+        if DEBUG:
+            show_extrinsic(receipt, description)
 
-def _execute_extrinsic_batch(substrate, kp_src, batch,
-                             wait_for_finalization=False) -> str:
-    """
-    Executes a extrinsic-stack/batch-call on substrate
-    Parameters:
-      substrate:  SubstrateInterface
-      kp_src:     Keypair
-      batch:      list[_compose_call(), _compose_call(), ...]
-    """
-    # Wrap payload into a utility batch cal
-    call = substrate.compose_call(
-        call_module='Utility',
-        call_function='batch_all',
-        call_params={
-            'calls': batch,
-        })
-
-    nonce = substrate.get_account_nonce(kp_src.ss58_address)
-    extrinsic = substrate.create_signed_extrinsic(
-        call=call,
-        keypair=kp_src,
-        era={'period': 64},
-        nonce=nonce
-    )
-
-    receipt = substrate.submit_extrinsic(
-        extrinsic, wait_for_inclusion=True,
-        wait_for_finalization=wait_for_finalization)
-    if len(batch) == 1:
-        description = _generate_call_description(batch[0])
-    else:
-        description = _generate_batch_description(batch)
-    if DEBUG:
-        show_extrinsic(receipt, description)
-
-    return receipt
+        return receipt
 
 
 def get_block_height(substrate):
@@ -234,7 +231,7 @@ def wait_for_n_blocks(substrate, n=1):
 
 
 def calculate_multi_sig(kps, threshold):
-    '''https://github.com/polkascan/py-scale-codec/blob/f063cfd47c836895886697e7d7112cbc4e7514b3/test/test_scale_types.py#L383'''
+    '''https://github.com/polkascan/py-scale-codec/blob/f063cfd47c836895886697e7d7112cbc4e7514b3/test/test_scale_types.py#L383'''  # noqa: E501
 
     addrs = [kp.ss58_address for kp in kps]
     RuntimeConfiguration().update_type_registry(load_type_registry_preset('legacy'))

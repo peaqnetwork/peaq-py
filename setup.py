@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.13'
+VERSION = '0.0.14'
 
 setup(
     name='peaq-py',
