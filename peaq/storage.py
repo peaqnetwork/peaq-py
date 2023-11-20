@@ -34,6 +34,7 @@ def storage_update(substrate, kp_src, item_type, item):
 
 
 def storage_rpc_read(substrate, addr, item_type):
+    bl_hsh = substrate.get_block_hash(None)
     data = substrate.rpc_request('peaqstorage_readAttribute', [
-                                 addr, item_type])
+                                 addr, item_type, bl_hsh])
     return data['result']
