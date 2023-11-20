@@ -51,5 +51,6 @@ def did_remove(substrate, kp_src, did_account, name):
 
 
 def did_rpc_read(substrate, did_account, name):
-    data = substrate.rpc_request('peaqdid_readAttribute', [did_account, name])
+    bl_hsh = substrate.get_block_hash(None)
+    data = substrate.rpc_request('peaqdid_readAttribute', [did_account, name, bl_hsh])
     return data['result']
