@@ -160,9 +160,10 @@ def _convert_output(data):
 
 
 def _rbac_rpc_fetch_entity(substrate, addr, entity, params):
+    bl_hsh = substrate.get_block_hash(None)
     data = substrate.rpc_request(
         f'peaqrbac_fetch{entity}',
-        [addr] + params
+        [addr] + params + [bl_hsh]
     )['result']
 
     if 'Err' in data:
