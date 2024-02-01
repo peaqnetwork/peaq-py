@@ -4,7 +4,7 @@ ETH_CHAIN_IDS = {
     'peaq-dev': 9990,
     'agung-network': 9990,
     'krest-network': 2241,
-    'peaq-network': 424242,
+    'peaq-network': 3338,
 }
 
 
