@@ -110,21 +110,21 @@ class ExtrinsicBatch:
             self.substrate, module, extrinsic, params))
 
     # TODO
-    def execute(self, wait_for_finalization=False, alt_keypair=None) -> str:
+    def execute(self, wait_for_finalization=False, alt_keypair=None, tip=0) -> str:
         """Executes the extrinsic-stack"""
         if not self.batch:
             return ''
         if alt_keypair is None:
             alt_keypair = self.keypair
         return self._execute_extrinsic_batch(
-            self.substrate, alt_keypair, self.batch, wait_for_finalization)
+            self.substrate, alt_keypair, self.batch, wait_for_finalization, tip)
 
     # TODO
-    def execute_n_clear(self, alt_keypair=None, wait_for_finalization=False) -> str:
+    def execute_n_clear(self, alt_keypair=None, wait_for_finalization=False, tip=0) -> str:
         """Combination of execute() and clear()"""
         if alt_keypair is None:
             alt_keypair = self.keypair
-        receipt = self.execute(wait_for_finalization, alt_keypair)
+        receipt = self.execute(wait_for_finalization, alt_keypair, tip)
         self.clear()
         return receipt
 
@@ -165,7 +165,8 @@ class ExtrinsicBatch:
         return self._compose_call(substrate, 'Sudo', 'sudo', {'call': payload.value})
 
     def _execute_extrinsic_batch(self, substrate, kp_src, batch,
-                                 wait_for_finalization=False) -> str:
+                                 wait_for_finalization=False,
+                                 tip=0) -> str:
         """
         Executes a extrinsic-stack/batch-call on substrate
         Parameters:
@@ -186,7 +187,8 @@ class ExtrinsicBatch:
             call=call,
             keypair=kp_src,
             era={'period': 64},
-            nonce=nonce
+            nonce=nonce,
+            tip=tip
         )
 
         receipt = substrate.submit_extrinsic(
