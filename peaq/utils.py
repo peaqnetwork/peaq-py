@@ -1,6 +1,7 @@
 import time
 from dataclasses import dataclass
 from substrateinterface import SubstrateInterface, Keypair
+from scalecodec.types import GenericExtrinsic
 from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from scalecodec.utils.ss58 import ss58_encode
@@ -84,6 +85,7 @@ class ExtrinsicBatch:
     substrate: SubstrateInterface
     keypair: Keypair
     batch: list
+    submit_extrinsic: GenericExtrinsic
 
     def __init__(self, substrate_or_url, keypair_or_uri):
         self.substrate = into_substrate(substrate_or_url)
@@ -190,6 +192,8 @@ class ExtrinsicBatch:
             nonce=nonce,
             tip=tip
         )
+        # Store the current extrinsic
+        self.submit_extrinsic = extrinsic
 
         receipt = substrate.submit_extrinsic(
             extrinsic, wait_for_inclusion=True,
