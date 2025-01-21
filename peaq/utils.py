@@ -5,6 +5,7 @@ from scalecodec.types import GenericExtrinsic
 from scalecodec.base import RuntimeConfiguration
 from scalecodec.type_registry import load_type_registry_preset
 from scalecodec.utils.ss58 import ss58_encode
+import socket
 
 DEBUG = False
 
@@ -121,6 +122,18 @@ class ExtrinsicBatch:
         return self._execute_extrinsic_batch(
             self.substrate, alt_keypair, self.batch, wait_for_finalization, tip)
 
+    def get_payload(self):
+        if not self.batch:
+            return None
+
+        # Wrap payload into a utility batch cal
+        return self.substrate.compose_call(
+            call_module='Utility',
+            call_function='batch_all',
+            call_params={
+                'calls': self.batch,
+            })
+
     # TODO
     def execute_n_clear(self, alt_keypair=None, wait_for_finalization=False, tip=0) -> str:
         """Combination of execute() and clear()"""
@@ -222,14 +235,30 @@ def get_chain(substrate):
 
 
 def wait_for_n_blocks(substrate, n=1):
+    # Force reconnect the node
     """Waits until the next block has been created"""
     height = get_block_height(substrate)
     wait_height = height + n
     past = 0
+    retry = 0
     while past < n:
-        next_height = get_block_height(substrate)
+        try:
+            substrate.connect_websocket()
+            next_height = get_block_height(substrate)
+        except (BrokenPipeError, socket.error) as e:
+            if retry > 3:
+                raise e
+            print(f'Error: {e}, now waiting 30 seconds')
+            # It's preparing for the parachain restart
+            time.sleep(30)
+            retry += 1
+            continue
+
         if height == next_height:
-            time.sleep(1)
+            time.sleep(5)
+        elif next_height >= wait_height:
+            print(f'Current block: {height}, and now we can stop at {wait_height}')
+            break
         else:
             print(f'Current block: {height}, but waiting at {wait_height}')
             height = next_height
