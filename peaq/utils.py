@@ -244,6 +244,8 @@ def wait_for_n_blocks(substrate, n=1):
     while past < n:
         try:
             substrate.connect_websocket()
+            # Force to get the latest block metadata to check whether the node can support or not
+            substrate.get_block_metadata()
             next_height = get_block_height(substrate)
         except (BrokenPipeError, socket.error) as e:
             if retry > 3:
