@@ -234,14 +234,19 @@ def get_chain(substrate):
     return substrate.rpc_request(method='system_chain', params=[]).get('result')
 
 
-def wait_for_n_blocks(substrate, n=1):
+def wait_for_n_blocks(substrate, n=1, wait_time=700):
     # Force reconnect the node
     """Waits until the next block has been created"""
     height = get_block_height(substrate)
     wait_height = height + n
     past = 0
     retry = 0
+
+    start = time.time()
     while past < n:
+        end = time.time()
+        if end - start > wait_time:
+            raise TimeoutError('Timeout for waiting blocks')
         try:
             substrate.connect_websocket()
             # Force to get the latest block metadata to check whether the node can support or not
